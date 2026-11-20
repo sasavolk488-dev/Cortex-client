@@ -33,10 +33,10 @@ jobs:
           rootProject.name = 'cortex-client'
           EOF
 
-          # 2. build.gradle (Убрали конфликтующие аргументы)
+          # 2. build.gradle (Плагин fabric-loom-remap для 1.21.11)
           cat > build.gradle << 'EOF'
           plugins {
-              id 'fabric-loom' version '1.9-SNAPSHOT'
+              id 'net.fabricmc.fabric-loom-remap' version '1.16.3'
               id 'maven-publish'
           }
           version = project.mod_version
@@ -68,20 +68,20 @@ jobs:
           }
           EOF
 
-          # 3. gradle.properties
+          # 3. gradle.properties (Версии для 1.21.11)
           cat > gradle.properties << 'EOF'
-          org.gradle.jvmargs=-Xmx1G
+          org.gradle.jvmargs=-Xmx2G
           org.gradle.parallel=true
-          minecraft_version=1.21.4
-          yarn_mappings=1.21.4+build.8
-          loader_version=0.16.9
-          fabric_version=0.119.2+1.21.4
+          minecraft_version=1.21.11
+          yarn_mappings=1.21.11+build.6
+          loader_version=0.19.3
+          fabric_version=0.141.4+1.21.11
           mod_version=1.0.0
           maven_group=com.cortex
           archives_base_name=cortex-client
           EOF
 
-          # 4. gradle-wrapper.properties
+          # 4. gradle-wrapper.properties (Gradle 8.12 для Loom 1.16)
           mkdir -p gradle/wrapper
           cat > gradle/wrapper/gradle-wrapper.properties << 'EOF'
           distributionBase=GRADLE_USER_HOME
