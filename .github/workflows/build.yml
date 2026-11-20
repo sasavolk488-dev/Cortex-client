@@ -13,18 +13,19 @@ jobs:
             rm source.zip
           fi
           
-          # Ищем папку с проектом (где лежит gradlew)
           GRADLEW_PATH=$(find . -name "gradlew" -type f -print -quit)
           if [ -z "$GRADLEW_PATH" ]; then
-            echo "ОШИБКА: файл gradlew вообще не найден!"
+            echo "ОШИБКА: файл gradlew не найден!"
             exit 1
           fi
           DIR=$(dirname "$GRADLEW_PATH")
           echo "PROJECT_DIR=$DIR" >> $GITHUB_ENV
           
-          # МАГИЯ: копируем наш новый build.gradle внутрь распакованной папки, затирая старый
+          # Заменяем старые файлы сборки на наши новые
           cp build.gradle $DIR/build.gradle
-          cp build.gradle $DIR/build.gradle.kts || true
+          cp gradle.properties $DIR/gradle.properties
+          mkdir -p $DIR/gradle/wrapper
+          cp gradle/wrapper/gradle-wrapper.properties $DIR/gradle/wrapper/gradle-wrapper.properties
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
