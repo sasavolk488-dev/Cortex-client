@@ -8,13 +8,11 @@ jobs:
 
       - name: Unzip and Auto-Config
         run: |
-          # 1. Распаковываем архив
           if [ -f source.zip ]; then
             unzip -q source.zip -d .
             rm source.zip
           fi
           
-          # 2. Ищем, где лежит проект
           GRADLEW_PATH=$(find . -name "gradlew" -type f -print -quit)
           if [ -z "$GRADLEW_PATH" ]; then
             echo "ОШИБКА: файл gradlew не найден!"
@@ -24,7 +22,7 @@ jobs:
           echo "PROJECT_DIR=$DIR" >> $GITHUB_ENV
           cd $DIR
 
-          # 3. АВТОМАТИЧЕСКИ создаем правильные файлы сборки
+          # 1. Создаем settings.gradle с репозиторием Fabric
           cat > settings.gradle << 'EOF'
           pluginManagement {
               repositories {
@@ -35,9 +33,10 @@ jobs:
           rootProject.name = 'cortex-client'
           EOF
 
+          # 2. Создаем build.gradle с правильным Loom (1.13+) и отключенным preview
           cat > build.gradle << 'EOF'
           plugins {
-              id 'fabric-loom' version '1.7-SNAPSHOT'
+              id 'net.fabricmc.fabric-loom-remap' version '1.13.1'
               id 'maven-publish'
           }
           version = project.mod_version
@@ -58,11 +57,12 @@ jobs:
           }
           EOF
 
+          # 3. Создаем gradle.properties с версией Yarn "build.3"
           cat > gradle.properties << 'EOF'
           org.gradle.jvmargs=-Xmx1G
           org.gradle.parallel=true
           minecraft_version=1.21.11
-          yarn_mappings=1.21.11+build.2
+          yarn_mappings=1.21.11+build.3
           loader_version=0.18.2
           fabric_version=0.140.0+1.21.11
           mod_version=1.0.0
@@ -70,11 +70,12 @@ jobs:
           archives_base_name=cortex-client
           EOF
 
+          # 4. Обновляем Gradle wrapper до версии 8.10
           mkdir -p gradle/wrapper
           cat > gradle/wrapper/gradle-wrapper.properties << 'EOF'
           distributionBase=GRADLE_USER_HOME
           distributionPath=wrapper/dists
-          distributionUrl=https\://services.gradle.org/distributions/gradle-8.8-bin.zip
+          distributionUrl=https\://services.gradle.org/distributions/gradle-8.10-bin.zip
           networkTimeout=10000
           validateDistributionUrl=true
           zipStoreBase=GRADLE_USER_HOME
