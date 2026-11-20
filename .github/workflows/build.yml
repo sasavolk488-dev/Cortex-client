@@ -21,9 +21,6 @@ jobs:
           DIR=$(dirname "$GRADLEW_PATH")
           echo "PROJECT_DIR=$DIR" >> $GITHUB_ENV
           cd $DIR
-          
-          echo "=== СОДЕРЖИМОЕ ПАПКИ ПРОЕКТА ==="
-          ls -R
 
           # 1. settings.gradle
           cat > settings.gradle << 'EOF'
@@ -36,7 +33,7 @@ jobs:
           rootProject.name = 'cortex-client'
           EOF
 
-          # 2. build.gradle (ДОБАВЛЕНЫ sourceSets для поиска кода)
+          # 2. build.gradle (Убрали конфликтующие аргументы)
           cat > build.gradle << 'EOF'
           plugins {
               id 'fabric-loom' version '1.9-SNAPSHOT'
@@ -53,7 +50,6 @@ jobs:
               modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
           }
           
-          // Указываем Gradle, где искать исходники, даже если структура папок нестандартная
           sourceSets {
               main {
                   java {
@@ -69,7 +65,6 @@ jobs:
           tasks.withType(JavaCompile).configureEach {
               it.options.encoding = "UTF-8"
               it.options.release = 21
-              it.options.compilerArgs += ["-source", "21", "-target", "21"]
           }
           EOF
 
@@ -108,7 +103,7 @@ jobs:
         run: |
           cd ${{ env.PROJECT_DIR }}
           chmod +x gradlew
-          ./gradlew build --no-daemon --info
+          ./gradlew build --no-daemon
 
       - name: Upload JAR
         uses: actions/upload-artifact@v4
