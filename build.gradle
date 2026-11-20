@@ -1,5 +1,6 @@
 plugins {
-    id 'fabric-loom' version '1.7-SNAPSHOT'
+    // Правильный плагин для 1.21.11
+    id 'net.fabricmc.fabric-loom-remap' version '1.12-SNAPSHOT'
     id 'maven-publish'
 }
 
@@ -31,7 +32,6 @@ processResources {
 tasks.withType(JavaCompile).configureEach {
     it.options.encoding = "UTF-8"
     it.options.release = 21
-    
-    // Отключаем экспериментальные функции (preview), из-за которых вылетает ошибка
+    // Отключаем preview-режим, чтобы не было краша 65.65535
     it.options.compilerArgs += ["-source", "21", "-target", "21"]
 }
