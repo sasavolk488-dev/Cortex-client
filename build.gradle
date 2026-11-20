@@ -1,5 +1,4 @@
 plugins {
-    // Используем стандартный fabric-loom. Он точно скачается.
     id 'fabric-loom' version '1.7-SNAPSHOT'
     id 'maven-publish'
 }
