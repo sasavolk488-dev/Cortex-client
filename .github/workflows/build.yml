@@ -22,7 +22,7 @@ jobs:
           echo "PROJECT_DIR=$DIR" >> $GITHUB_ENV
           cd $DIR
 
-          # 1. settings.gradle (репозиторий Fabric)
+          # 1. settings.gradle
           cat > settings.gradle << 'EOF'
           pluginManagement {
               repositories {
@@ -33,7 +33,7 @@ jobs:
           rootProject.name = 'cortex-client'
           EOF
 
-          # 2. build.gradle (ПРАВИЛЬНЫЙ плагин для 1.21.4)
+          # 2. build.gradle
           cat > build.gradle << 'EOF'
           plugins {
               id 'fabric-loom' version '1.9-SNAPSHOT'
@@ -57,7 +57,7 @@ jobs:
           }
           EOF
 
-          # 3. gradle.properties (версии для 1.21.4)
+          # 3. gradle.properties
           cat > gradle.properties << 'EOF'
           org.gradle.jvmargs=-Xmx1G
           org.gradle.parallel=true
@@ -70,12 +70,12 @@ jobs:
           archives_base_name=cortex-client
           EOF
 
-          # 4. gradle-wrapper.properties (Gradle 8.10)
+          # 4. gradle-wrapper.properties (Теперь Gradle 8.12!)
           mkdir -p gradle/wrapper
           cat > gradle/wrapper/gradle-wrapper.properties << 'EOF'
           distributionBase=GRADLE_USER_HOME
           distributionPath=wrapper/dists
-          distributionUrl=https\://services.gradle.org/distributions/gradle-8.10-bin.zip
+          distributionUrl=https\://services.gradle.org/distributions/gradle-8.12-bin.zip
           networkTimeout=10000
           validateDistributionUrl=true
           zipStoreBase=GRADLE_USER_HOME
