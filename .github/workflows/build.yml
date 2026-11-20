@@ -6,13 +6,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Unzip source
+      - name: Unzip and Auto-Config
         run: |
+          # 1. Распаковываем архив
           if [ -f source.zip ]; then
             unzip -q source.zip -d .
             rm source.zip
           fi
           
+          # 2. Ищем, где лежит проект
           GRADLEW_PATH=$(find . -name "gradlew" -type f -print -quit)
           if [ -z "$GRADLEW_PATH" ]; then
             echo "ОШИБКА: файл gradlew не найден!"
@@ -20,13 +22,64 @@ jobs:
           fi
           DIR=$(dirname "$GRADLEW_PATH")
           echo "PROJECT_DIR=$DIR" >> $GITHUB_ENV
-          
-          # Копируем наши правильные файлы поверх тех, что в архиве
-          cp build.gradle $DIR/build.gradle
-          cp settings.gradle $DIR/settings.gradle
-          cp gradle.properties $DIR/gradle.properties
-          mkdir -p $DIR/gradle/wrapper
-          cp gradle/wrapper/gradle-wrapper.properties $DIR/gradle/wrapper/gradle-wrapper.properties
+          cd $DIR
+
+          # 3. АВТОМАТИЧЕСКИ создаем правильные файлы сборки
+          cat > settings.gradle << 'EOF'
+          pluginManagement {
+              repositories {
+                  maven { name = 'Fabric'; url = 'https://maven.fabricmc.net/' }
+                  gradlePluginPortal()
+              }
+          }
+          rootProject.name = 'cortex-client'
+          EOF
+
+          cat > build.gradle << 'EOF'
+          plugins {
+              id 'fabric-loom' version '1.7-SNAPSHOT'
+              id 'maven-publish'
+          }
+          version = project.mod_version
+          group = project.maven_group
+          base { archivesName = project.archives_base_name }
+          repositories { mavenCentral() }
+          dependencies {
+              minecraft "com.mojang:minecraft:${project.minecraft_version}"
+              mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+              modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+              modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+          }
+          processResources { inputs.property "version", project.version; filesMatching("fabric.mod.json") { expand "version": project.version } }
+          tasks.withType(JavaCompile).configureEach {
+              it.options.encoding = "UTF-8"
+              it.options.release = 21
+              it.options.compilerArgs += ["-source", "21", "-target", "21"]
+          }
+          EOF
+
+          cat > gradle.properties << 'EOF'
+          org.gradle.jvmargs=-Xmx1G
+          org.gradle.parallel=true
+          minecraft_version=1.21.11
+          yarn_mappings=1.21.11+build.2
+          loader_version=0.18.2
+          fabric_version=0.140.0+1.21.11
+          mod_version=1.0.0
+          maven_group=com.cortex
+          archives_base_name=cortex-client
+          EOF
+
+          mkdir -p gradle/wrapper
+          cat > gradle/wrapper/gradle-wrapper.properties << 'EOF'
+          distributionBase=GRADLE_USER_HOME
+          distributionPath=wrapper/dists
+          distributionUrl=https\://services.gradle.org/distributions/gradle-8.8-bin.zip
+          networkTimeout=10000
+          validateDistributionUrl=true
+          zipStoreBase=GRADLE_USER_HOME
+          zipStorePath=wrapper/dists
+          EOF
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
