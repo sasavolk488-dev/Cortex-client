@@ -21,6 +21,9 @@ jobs:
           DIR=$(dirname "$GRADLEW_PATH")
           echo "PROJECT_DIR=$DIR" >> $GITHUB_ENV
           cd $DIR
+          
+          echo "=== СОДЕРЖИМОЕ ПАПКИ ПРОЕКТА ==="
+          ls -R
 
           # 1. settings.gradle
           cat > settings.gradle << 'EOF'
@@ -33,7 +36,7 @@ jobs:
           rootProject.name = 'cortex-client'
           EOF
 
-          # 2. build.gradle
+          # 2. build.gradle (ДОБАВЛЕНЫ sourceSets для поиска кода)
           cat > build.gradle << 'EOF'
           plugins {
               id 'fabric-loom' version '1.9-SNAPSHOT'
@@ -49,6 +52,19 @@ jobs:
               modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
               modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
           }
+          
+          // Указываем Gradle, где искать исходники, даже если структура папок нестандартная
+          sourceSets {
+              main {
+                  java {
+                      srcDirs = ['src/main/java', 'src/client/java', 'src']
+                  }
+                  resources {
+                      srcDirs = ['src/main/resources', 'src/client/resources', 'src']
+                  }
+              }
+          }
+
           processResources { inputs.property "version", project.version; filesMatching("fabric.mod.json") { expand "version": project.version } }
           tasks.withType(JavaCompile).configureEach {
               it.options.encoding = "UTF-8"
@@ -70,7 +86,7 @@ jobs:
           archives_base_name=cortex-client
           EOF
 
-          # 4. gradle-wrapper.properties (Теперь Gradle 8.12!)
+          # 4. gradle-wrapper.properties
           mkdir -p gradle/wrapper
           cat > gradle/wrapper/gradle-wrapper.properties << 'EOF'
           distributionBase=GRADLE_USER_HOME
@@ -92,7 +108,7 @@ jobs:
         run: |
           cd ${{ env.PROJECT_DIR }}
           chmod +x gradlew
-          ./gradlew build --no-daemon
+          ./gradlew build --no-daemon --info
 
       - name: Upload JAR
         uses: actions/upload-artifact@v4
