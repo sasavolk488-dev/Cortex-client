@@ -22,7 +22,7 @@ jobs:
           echo "PROJECT_DIR=$DIR" >> $GITHUB_ENV
           cd $DIR
 
-          # 1. settings.gradle
+          # 1. settings.gradle (репозиторий Fabric)
           cat > settings.gradle << 'EOF'
           pluginManagement {
               repositories {
@@ -33,10 +33,10 @@ jobs:
           rootProject.name = 'cortex-client'
           EOF
 
-          # 2. build.gradle (Плагин fabric-loom-remap для 1.21.11)
+          # 2. build.gradle (Правильный плагин и версия для 1.21.11)
           cat > build.gradle << 'EOF'
           plugins {
-              id 'net.fabricmc.fabric-loom-remap' version '1.16.3'
+              id 'net.fabricmc.fabric-loom-remap' version '1.14-SNAPSHOT'
               id 'maven-publish'
           }
           version = project.mod_version
@@ -81,12 +81,12 @@ jobs:
           archives_base_name=cortex-client
           EOF
 
-          # 4. gradle-wrapper.properties (Gradle 8.12 для Loom 1.16)
+          # 4. gradle-wrapper.properties (Gradle 9.2 для Loom 1.14)
           mkdir -p gradle/wrapper
           cat > gradle/wrapper/gradle-wrapper.properties << 'EOF'
           distributionBase=GRADLE_USER_HOME
           distributionPath=wrapper/dists
-          distributionUrl=https\://services.gradle.org/distributions/gradle-8.12-bin.zip
+          distributionUrl=https\://services.gradle.org/distributions/gradle-9.2-bin.zip
           networkTimeout=10000
           validateDistributionUrl=true
           zipStoreBase=GRADLE_USER_HOME
