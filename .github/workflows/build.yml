@@ -9,9 +9,18 @@ jobs:
       - name: Unzip source
         run: |
           if [ -f source.zip ]; then
-            unzip source.zip -d .
+            unzip -q source.zip -d .
             rm source.zip
           fi
+          # Эта строчка ищет, где именно лежит gradlew
+          GRADLEW_PATH=$(find . -name "gradlew" -type f -print -quit)
+          if [ -z "$GRADLEW_PATH" ]; then
+            echo "ОШИБКА: файл gradlew вообще не найден внутри source.zip!"
+            exit 1
+          fi
+          DIR=$(dirname "$GRADLEW_PATH")
+          echo "Проект найден в папке: $DIR"
+          echo "PROJECT_DIR=$DIR" >> $GITHUB_ENV
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -19,14 +28,14 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
       - name: Build with Gradle
-        run: ./gradlew build
+        run: |
+          cd ${{ env.PROJECT_DIR }}
+          chmod +x gradlew
+          ./gradlew build
 
       - name: Upload JAR
         uses: actions/upload-artifact@v4
         with:
           name: Cortex-JAR
-          path: build/libs/*.jar
+          path: ${{ env.PROJECT_DIR }}/build/libs/*.jar
