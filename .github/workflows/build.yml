@@ -21,8 +21,9 @@ jobs:
           DIR=$(dirname "$GRADLEW_PATH")
           echo "PROJECT_DIR=$DIR" >> $GITHUB_ENV
           
-          # Заменяем старые файлы сборки на наши новые
+          # Копируем наши правильные файлы поверх тех, что в архиве
           cp build.gradle $DIR/build.gradle
+          cp settings.gradle $DIR/settings.gradle
           cp gradle.properties $DIR/gradle.properties
           mkdir -p $DIR/gradle/wrapper
           cp gradle/wrapper/gradle-wrapper.properties $DIR/gradle/wrapper/gradle-wrapper.properties
